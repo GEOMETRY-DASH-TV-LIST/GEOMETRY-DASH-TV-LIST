@@ -3,243 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GD TV List - Global Edition</title>
+    <title>GEOMETRY DASH TV LIST (GDTVL)</title>
     <style>
+        :root {
+            --primary: #00d4ff; --accent: #ff4b2b; --gold: #ffd700; --bg: #050505;
+            --card-bg: rgba(15, 15, 15, 0.98); --border: #222; --text: #eee;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: #050505; color: white; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; }
+        body { 
+            background-color: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at top right, #0a1824, #050505);
+            min-height: 100vh;
+        }
 
-        /* --- BOTONES FLOTANTES --- */
+        /* --- UI NAVIGATION --- */
         .top-controls { position: fixed; top: 20px; right: 20px; z-index: 5000; display: flex; gap: 10px; }
-        .control-btn { background: #111; padding: 12px; border-radius: 10px; border: 1px solid #00d4ff; cursor: pointer; color: #00d4ff; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; min-width: 45px; }
-        
-        #menu-btn div { width: 25px; height: 3px; background-color: #00d4ff; margin: 5px 0; }
+        .control-btn { 
+            background: rgba(10, 10, 10, 0.9); padding: 12px 18px; border-radius: 8px; 
+            border: 1px solid var(--primary); cursor: pointer; color: var(--primary); 
+            font-weight: 900; backdrop-filter: blur(15px); text-transform: uppercase; font-size: 0.75rem;
+        }
 
-        /* --- NAVEGACIÓN --- */
-        #side-menu { height: 100%; width: 0; position: fixed; z-index: 4000; top: 0; right: 0; background: #0a0a0a; transition: 0.5s; overflow-x: hidden; padding-top: 80px; border-left: 2px solid #00d4ff; }
-        #side-menu a { padding: 18px 30px; text-decoration: none; font-size: 17px; color: #aaa; display: block; border-bottom: 1px solid #1a1a1a; transition: 0.3s; }
-        #side-menu a.highlight { color: #ffd700; font-weight: bold; background: rgba(255, 215, 0, 0.05); }
+        #side-menu { 
+            height: 100%; width: 0; position: fixed; z-index: 4000; top: 0; right: 0; 
+            background: rgba(2, 2, 2, 0.99); transition: 0.4s; overflow-x: hidden; 
+            padding-top: 100px; border-left: 2px solid var(--primary); 
+        }
+        #side-menu a { padding: 15px 30px; text-decoration: none; font-size: 1rem; color: #666; display: block; border-bottom: 1px solid #111; transition: 0.3s; }
+        #side-menu a:hover { color: var(--primary); background: rgba(0, 212, 255, 0.05); }
+        .highlight { color: var(--gold) !important; font-weight: bold; }
 
-        /* --- SECCIONES --- */
-        .section { display: none; padding: 100px 15px 60px; max-width: 650px; margin: auto; animation: fadeIn 0.4s ease-out; }
+        .section { display: none; padding: 100px 20px; max-width: 900px; margin: auto; animation: fadeIn 0.5s; }
         .section-active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
-        /* --- TARJETAS --- */
-        .card { background: #0f0f0f; border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; position: relative; }
-        .rank { font-size: 26px; font-weight: 900; margin-right: 20px; font-style: italic; opacity: 0.8; }
-        .gold { border: 2px solid #ffd700 !important; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important; background: linear-gradient(145deg, #0f0f0f, #1a1600); }
-        .silver { border: 2px solid #c0c0c0 !important; box-shadow: 0 0 20px rgba(192, 192, 192, 0.2) !important; }
+        /* --- CARDS & LISTS --- */
+        .card { 
+            background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 10px; 
+            border: 1px solid var(--border); display: flex; align-items: center; cursor: pointer;
+        }
+        .rank { font-size: 24px; font-weight: 900; opacity: 0.2; width: 60px; }
+        .pts-tag { color: var(--primary); font-weight: bold; margin-left: auto; }
+
+        /* --- RULES DOCUMENT --- */
+        .rules-doc { background: #080808; border: 1px solid #333; padding: 40px; border-radius: 15px; line-height: 1.6; }
+        .rule-block { margin-bottom: 30px; }
+        .rule-block h3 { color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        .device-list { background: #111; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid var(--primary); }
+        .exception-box { background: rgba(0, 212, 255, 0.1); border: 1px solid var(--primary); padding: 20px; border-radius: 10px; margin: 20px 0; }
+
+        /* --- PLAYER RANKING --- */
+        .player-card { background: #0d0d0d; padding: 15px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #1a1a1a; }
+        .p-bar-bg { background: #222; height: 10px; width: 100%; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .p-bar-fill { background: linear-gradient(90deg, var(--primary), #0077ff); height: 100%; transition: 1.5s ease-out; }
 
         /* --- MODAL --- */
-        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 6000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .modal-content { background: #111; width: 92%; max-width: 480px; border-radius: 20px; border: 1px solid #333; padding: 25px; position: relative; max-height: 85vh; overflow-y: auto; text-align: center; }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #ff4b2b; cursor: pointer; }
-        .victors-list { text-align: left; background: #0a0a0a; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid #222; list-style: none; }
-        .victors-list li { margin-bottom: 10px; font-size: 14px; border-bottom: 1px dotted #222; padding-bottom: 5px; color: #00d4ff; }
-        .victors-list span { color: #fff; float: right; font-weight: bold; }
-
-        /* --- REGLAS --- */
-        .rules-card { background: #0a0a0a; padding: 30px; border-radius: 20px; border: 1px solid #222; text-align: left; }
-        .rule-box { margin-bottom: 35px; }
-        .rule-box h3 { color: #ff4b2b; font-size: 18px; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; }
-        .rule-box h3::before { content: "◈"; margin-right: 10px; color: #ff4b2b; }
-        .rule-desc { font-size: 14px; line-height: 1.8; color: #bbb; padding-left: 20px; border-left: 1px solid #333; }
-
-        /* --- ESTILO NOCLIP --- */
-        .acc-info { text-align: right; }
-        .acc-label { color: #00ff00; font-weight: bold; font-size: 13px; display: block; }
-        .pts-sub { color: #666; font-size: 10px; text-transform: uppercase; display: block; margin-top: 2px; }
-
-        .stats-table { width: 100%; border-collapse: collapse; }
-        .stats-row td { padding: 18px; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
-
-        .form-btn { display: block; background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; padding: 20px; border-radius: 12px; text-decoration: none; font-weight: 900; text-align: center; margin-top: 30px; text-transform: uppercase; }
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 6000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: #0a0a0a; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="top-controls">
-        <div class="control-btn" onclick="toggleLanguage()" id="lang-btn">EN</div>
-        <div class="control-btn" id="menu-btn" onclick="toggleMenu()">
-            <div></div><div></div><div></div>
-        </div>
+        <div class="control-btn" onclick="toggleLanguage()" id="lang-btn">ESP</div>
+        <div class="control-btn" onclick="toggleMenu()">MENU ☰</div>
     </div>
 
     <nav id="side-menu">
-        <a href="#" onclick="showSection('inicio')" data-t="nav_top15">🏆 Top 15 Niveles</a>
-        <a href="#" onclick="showSection('noclip')" data-t="nav_noclip">🎬 Noclip Runs List</a>
-        <a href="#" onclick="showSection('jugadores')" data-t="nav_players">👥 Top 100 Jugadores</a>
-        <a href="#" onclick="showSection('reglas')" data-t="nav_rules">📜 Reglamento Legal</a>
-        <a href="https://forms.gle/52ifAHg4i1yG4tye8" target="_blank" class="highlight" data-t="nav_submit">📝 ENVIAR RÉCORD</a>
+        <a href="#" onclick="showSection('inicio')" id="n-top"></a>
+        <a href="#" onclick="showSection('noclip')" id="n-noclip"></a>
+        <a href="#" onclick="showSection('jugadores')" id="n-players"></a>
+        <a href="#" onclick="showSection('reglas')" id="n-rules" style="color:var(--accent)"></a>
+        <a href="https://forms.gle/52ifAHg4i1yG4tye8" target="_blank" class="highlight" id="n-submit"></a>
     </nav>
 
-    <div id="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeDetails()">&times;</span>
-            <h2 id="m-title" style="color:#ffd700;">LEVEL</h2>
-            <p id="m-creator" style="color:#666; margin-bottom:20px;">por Autor</p>
-            <div style="display:flex; justify-content:space-around; background:#1a1a1a; padding:15px; border-radius:12px; font-size:12px;">
-                <div>⏱️ <br> <span id="m-dur">0:00</span></div>
-                <div>💎 <br> <span id="m-obj">0k</span></div>
-                <div>🔥 <br> <span id="m-diff">Extreme</span></div>
-            </div>
-            <h4 id="m-list-title" style="margin-top:25px; text-align:left; color:#00d4ff;" data-t="modal_list">🏆 LISTA DE REGISTROS:</h4>
-            <ul class="victors-list" id="m-victors-list"></ul>
-            <a id="m-video" href="#" target="_blank" style="display:block; background:#ff4b2b; color:white; padding:15px; border-radius:12px; text-decoration:none; margin-top:20px; font-weight:bold;" data-t="modal_btn">VER PRUEBA ORIGINAL</a>
-        </div>
-    </div>
-
-    <div id="inicio" class="section section-active">
-        <h1 style="text-align:center; margin-bottom:40px; font-weight:900;" data-t="title_top15">TV TOP LIST</h1>
-        <div id="niveles-lista"></div>
-    </div>
-
-    <div id="noclip" class="section">
-        <h1 style="text-align:center; margin-bottom:40px; font-weight:900;" data-t="title_noclip">NOCLIP RUNS LIST</h1>
-        
-        <div class="card gold" onclick="openLevel('DEFEATED CIRCLES', 'gtjgr', '1:25', '45k', ['gtjgr - 98.4% (Acc)'], '#', 'Noclip Showcases')">
-            <div class="rank">1</div>
-            <div class="info"><b>DEFEATED CIRCLES</b><br><small data-t="noclip_tag">Accuracy Showcase</small></div>
-            <div class="acc-info">
-                <span class="acc-label">98.4% Accuracy</span>
-                <span class="pts-sub" data-t="pts_75">50% de los puntos</span>
-            </div>
-        </div>
-
-        <div class="card silver" onclick="openLevel('THINKING SPACE 2', 'gtjgr', '2:54', '248k', ['gtjgr - 94.32% (Acc)'], '#', 'Noclip Showcases')">
-            <div class="rank">2</div>
-            <div class="info"><b>THINKING SPACE 2</b><br><small data-t="noclip_tag">Accuracy Showcase</small></div>
-            <div class="acc-info">
-                <span class="acc-label">94.32% Accuracy</span>
-                <span class="pts-sub" data-t="pts_25">25% de los puntos</span>
-            </div>
-        </div>
-
-        <div id="noclip-lista-gen"></div>
-    </div>
-
-    <div id="jugadores" class="section">
-        <h1 style="text-align:center; margin-bottom:40px; font-weight:900;" data-t="title_ranking">RANKING GLOBAL</h1>
-        <table class="stats-table">
-            <tr class="stats-row gold">
-                <td style="font-weight:bold; width:50px;">1</td>
-                <td><b>gtjgr</b></td>
-                <td style="text-align:right; color:#ffd700; font-weight:bold;">2500pts</td>
-            </tr>
-            <tbody id="jugadores-lista-gen"></tbody>
-        </table>
-    </div>
+    <div id="inicio" class="section section-active"><h1 id="h-top" style="text-align:center; margin-bottom:40px;"></h1><div id="list-main"></div></div>
+    <div id="noclip" class="section"><h1 id="h-noclip" style="text-align:center; margin-bottom:40px;"></h1><div id="list-noclip"></div></div>
+    <div id="jugadores" class="section"><h1 id="h-ranking" style="text-align:center; margin-bottom:40px;"></h1><div id="list-players"></div></div>
 
     <div id="reglas" class="section">
-        <div class="rules-card">
-            <h2 style="text-align:center; margin-bottom:35px; color:#ff4b2b; letter-spacing:3px;" data-t="rule_header">CÓDIGO DE VERIFICACIÓN</h2>
+        <div class="rules-doc">
+            <h2 id="r-title" style="color:var(--primary); margin-bottom:30px; text-align:center;">GDTVL CONSTITUTION</h2>
+            <div id="rules-content"></div>
+        </div>
+    </div>
 
-            <div class="rule-box">
-                <h3 data-t="rule_t1">I. Protocolo de Grabación</h3>
-                <div class="rule-desc" data-t="rule_d1">
-                    Todo récord exige una <b>Handcam obligatoria</b> sin excepciones. La cámara debe enfocar simultáneamente manos, periférico y la pantalla de la TV en una toma continua. Se requiere <b>audio ambiental nítido</b> de los clicks.
-                </div>
-            </div>
-
-            <div class="rule-box">
-                <h3 data-t="rule_t2">II. Verificación de Hardware</h3>
-                <div class="rule-desc" data-t="rule_d2">
-                    Solo <b>Televisiones Reales</b>. Prohibido el uso de monitores de PC o emuladores. El uso de FPS Bypass fuera de los hercios nativos de la TV resultará en ban permanente.
-                </div>
-            </div>
-
-            <div class="rule-box">
-                <h3 data-t="rule_t3">III. Baremos de Accuracy (Noclip)</h3>
-                <div class="rule-desc" data-t="rule_d3">
-                    La jerarquía se basa estrictamente en la precisión:
-                    <br>• 99% - 99.99%: 75% de los puntos.
-                    <br>• 95% - 98.99%: 50% de los puntos.
-                    <br>• 90% - 94.99%: 25% de los puntos.
-                </div>
-            </div>
-
-            <a href="https://forms.gle/52ifAHg4i1yG4tye8" target="_blank" class="form-btn" data-t="nav_submit">REGISTRAR RÉCORD OFICIAL 📝</a>
+    <div id="modal-overlay" onclick="closeDetails()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 id="m-title" style="color:var(--gold);"></h2>
+            <p id="m-creator" style="color:#666; margin-bottom:20px;"></p>
+            <div id="m-victors" style="background:#000; padding:15px; border-radius:10px; text-align:left;"></div>
+            <a id="m-video" href="#" target="_blank" style="display:block; background:var(--accent); color:white; padding:15px; margin-top:20px; text-decoration:none; border-radius:10px; font-weight:bold;"></a>
         </div>
     </div>
 
     <script>
+        /* ==========================================
+           GUÍA DE RELLENADO (BASE DE DATOS)
+           ========================================== */
+
+        // MAIN LIST (TOP 75)
+        let nivelesMain = [
+            { 
+                nombre: "NIVEL EJEMPLO",      // Nombre del nivel
+                creador: "CREADOR EJEMPLO",    // Quién lo creó
+                puntos: 0,                  // Puntos que da (número)
+                link: "https://youtube.com",  // Link al video de prueba
+                records: [{p: "Jugador1", v: "100%"}, {p: "Jugador2", v: "100%"}] // Lista de victoriosos
+            },
+        ];
+
+        // NOCLIP LIST (TOP 75)
+        let nivelesNoclip = [
+            { 
+                nombre: "NIVEL EJEMPLO NOCLIP", 
+                creador: "CREADOR EJEMPLO", 
+                acc: 0,                    // Porcentaje de precisión (número)
+                link: "https://youtube.com", 
+                records: [{p: "Jugador1", v: "99.5%"}] 
+            },
+        ];
+
+        // JUGADORES (TOP 100)
+        let jugadoresData = [
+            { 
+                nombre: "NOMBRE JUGADOR",     // Nombre del jugador
+                puntos: 0                  // Puntos totales acumulados
+            },
+        ];
+
+        /* --- LLENADO AUTOMÁTICO DE SLOTS VACÍOS --- */
+        for(let i=nivelesMain.length+1; i<=75; i++) nivelesMain.push({ nombre: `MAIN SLOT #${i}`, creador: "VACANTE", puntos: 0, link: "#", records: [] });
+        for(let i=nivelesNoclip.length+1; i<=75; i++) nivelesNoclip.push({ nombre: `NOCLIP SLOT #${i}`, creador: "VACANTE", acc: 0, link: "#", records: [] });
+        for(let i=jugadoresData.length+1; i<=100; i++) jugadoresData.push({ nombre: `PLAYER SLOT #${i}`, puntos: 0 });
+
         let currentLang = 'es';
-        const translations = {
+
+        const i18n = {
             es: {
-                nav_top15: "🏆 Top 15 Niveles", nav_noclip: "🎬 Noclip Runs List", nav_players: "👥 Top 100 Jugadores", nav_rules: "📜 Reglamento Legal", nav_submit: "📝 ENVIAR RÉCORD",
-                title_top15: "TV TOP LIST", title_noclip: "NOCLIP RUNS LIST", title_ranking: "RANKING GLOBAL",
-                modal_list: "🏆 LISTA DE REGISTROS:", modal_btn: "VER PRUEBA ORIGINAL",
-                noclip_tag: "Accuracy Showcase", pts_75: "75% de los puntos", pts_25: "25% de los puntos",
-                rule_header: "CÓDIGO DE VERIFICACIÓN", rule_t1: "I. Protocolo de Grabación", rule_d1: "Todo récord exige una Handcam obligatoria sin excepciones. La cámara debe enfocar simultáneamente manos, periférico y la pantalla de la TV en una toma continua. Se requiere audio ambiental nítido de los clicks.",
-                rule_t2: "II. Verificación de Hardware", rule_d2: "Solo Televisiones Reales. Prohibido el uso de monitores de PC o emuladores. El uso de FPS Bypass fuera de los hercios nativos de la TV resultará en ban permanente.",
-                rule_t3: "III. Baremos de Accuracy (Noclip)", rule_d3: "La jerarquía se basa estrictamente en la precisión: 99%+ (75% pts), 95%+ (50% pts), 90%+ (25% pts)."
+                n_top: "🏆 TOP 75 MAIN", n_noclip: "🎬 TOP 75 NOCLIP", n_players: "👥 TOP 100 JUGADORES", n_rules: "⚖️ REGLAMENTO TÉCNICO", n_submit: "📝 SUBIR RÉCORD",
+                h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "WORLD RANKING", r_title: "CONSTITUCIÓN TÉCNICA DE GDTVL",
+                m_btn: "VER PRUEBA", by: "POR", pts: "PTS",
+                rules: `
+                <div class="rule-block">
+                    <h3>1. HARDWARE Y MÉTODOS DE INSTALACIÓN</h3>
+                    <p>Para evitar el lag de procesamiento, solo se permiten los siguientes métodos:</p>
+                    <div class="device-list">
+                        <b>• Smart TV (Android/Google TV):</b> Sideloading mediante la App "Send Files to TV" o USB para instalar el APK oficial.<br>
+                        <b>• TV Boxes (NVIDIA Shield, Xiaomi Mi Box, Chromecast 4K):</b> Instalación directa vía Play Store o APK.<br>
+                        <b>• Consolas:</b> Solo si la latencia es menor a 15ms.<br>
+                        <b>• Apple TV:</b> Solo mediante Sideloading nativo (.ipa).
+                    </div>
+                    <p><b>PROHIBICIÓN:</b> El uso de Casting/Mirroring desde un móvil está estrictamente prohibido debido a la latencia de red añadida.</p>
+                </div>
+                <div class="rule-block">
+                    <h3>2. EXCEPCIÓN DE TASA DE REFRESCO</h3>
+                    <div class="exception-box">
+                        <b>REGLA DE ORO:</b> Si el nivel posee secciones diseñadas para monitores de 240Hz+ que resulten <b>imposibles</b> en los 60Hz/120Hz nativos de una televisión, el jugador queda <b>totalmente autorizado</b> a utilizar FPS Bypass o Click Between Frames (CBF).
+                    </div>
+                </div>
+                <div class="rule-block">
+                    <h3>3. ASCENSO AUTOMÁTICO</h3>
+                    <p>Si un registro en la Noclip List alcanza una precisión del 100%, el sistema lo promoverá automáticamente a la Main List.</p>
+                </div>`
             },
             en: {
-                nav_top15: "🏆 Top 15 Levels", nav_noclip: "🎬 Noclip Runs List", nav_players: "👥 Top 100 Players", nav_rules: "📜 Legal Rules", nav_submit: "📝 SUBMIT RECORD",
-                title_top15: "TV TOP LIST", title_noclip: "NOCLIP RUNS LIST", title_ranking: "GLOBAL RANKING",
-                modal_list: "🏆 RECORDS LIST:", modal_btn: "WATCH ORIGINAL PROOF",
-                noclip_tag: "Accuracy Showcase", pts_75: "75% of points", pts_25: "25% of points",
-                rule_header: "VERIFICATION CODE", rule_t1: "I. Recording Protocol", rule_d1: "All records require an obligatory Handcam without exceptions. Camera must show hands, peripheral, and TV screen in a single shot. Clear ambient click audio is required.",
-                rule_t2: "II. Hardware Verification", rule_d2: "Only Real Televisions. Use of PC monitors or emulators is forbidden. FPS Bypass exceeding native TV hertz will result in a permanent ban.",
-                rule_t3: "III. Accuracy Standards (Noclip)", rule_d3: "Hierarchy is strictly based on precision: 99%+ (75% pts), 95%+ (50% pts), 90%+ (25% pts)."
+                n_top: "🏆 TOP 75 MAIN", n_noclip: "🎬 TOP 75 NOCLIP", n_players: "👥 TOP 100 PLAYERS", n_rules: "⚖️ TECHNICAL RULES", n_submit: "📝 SUBMIT RECORD",
+                h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "WORLD RANKING", r_title: "GDTVL TECHNICAL CONSTITUTION",
+                m_btn: "WATCH PROOF", by: "BY", pts: "PTS",
+                rules: `
+                <div class="rule-block">
+                    <h3>1. HARDWARE & INSTALLATION</h3>
+                    <p>To prevent processing lag, only the following methods are allowed:</p>
+                    <div class="device-list">
+                        <b>• Smart TV (Android/Google TV):</b> Sideloading via "Send Files to TV" or USB for official APK installation.<br>
+                        <b>• TV Boxes (NVIDIA Shield, Mi Box, Chromecast):</b> Direct Play Store or APK install.<br>
+                        <b>• Consoles:</b> Only if input latency is below 15ms.<br>
+                        <b>• Apple TV:</b> Native sideloading (.ipa) only.
+                    </div>
+                    <p><b>PROHIBITION:</b> Mobile screen mirroring/casting is strictly banned due to network latency.</p>
+                </div>
+                <div class="rule-block">
+                    <h3>2. REFRESH RATE EXCEPTION</h3>
+                    <div class="exception-box">
+                        <b>GOLDEN RULE:</b> If a level's architecture is <b>impossible</b> on native 60Hz/120Hz TVs compared to high-end monitors, the player is <b>fully authorized</b> to use FPS Bypass or CBF.
+                    </div>
+                </div>
+                <div class="rule-block">
+                    <h3>3. AUTOMATIC ASCENSION</h3>
+                    <p>If a Noclip List record reaches 100% accuracy, the system will automatically promote it to the Main List.</p>
+                </div>`
+            },
+            ru: {
+                n_top: "🏆 ТОП 75 MAIN", n_noclip: "🎬 ТОП 75 NOCLIP", n_players: "👥 ТОП 100 ИГРОКОВ", n_rules: "⚖️ ПРАВИЛА", n_submit: "📝 ОТПРАВИТЬ РЕКОРД",
+                h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "МИРОВОЙ РЕЙТИНГ", r_title: "GDTVL ТЕХНИЧЕСКИЙ РЕГЛАМЕНТ",
+                m_btn: "СМОТРЕТЬ", by: "ОТ", pts: "ОЧКОВ",
+                rules: `
+                <div class="rule-block">
+                    <h3>1. ОБОРУДОВАНИЕ И УСТАНОВКА</h3>
+                    <p>Для предотвращения задержек разрешены только следующие методы:</p>
+                    <div class="device-list">
+                        <b>• Smart TV:</b> Sideloading через USB или "Send Files to TV".<br>
+                        <b>• TV Boxes:</b> NVIDIA Shield, Mi Box, Chromecast.<br>
+                        <b>• Консоли:</b> Только при задержке ввода менее 15 мс.
+                    </div>
+                    <p><b>ЗАПРЕТ:</b> Трансляция экрана с мобильного устройства строго запрещена.</p>
+                </div>
+                <div class="rule-block">
+                    <h3>2. ИСКЛЮЧЕНИЕ ЧАСТОТЫ ОБНОВЛЕНИЯ</h3>
+                    <div class="exception-box">
+                        <b>ЗОЛОТОЕ ПРАВИЛО:</b> Если уровень <b>невозможен</b> на стандартных 60/120 Гц, игроку официально разрешено использовать FPS Bypass или CBF.
+                    </div>
+                </div>
+                <div class="rule-block">
+                    <h3>3. АВТОМАТИЧЕСКИЙ ПОДЪЕМ</h3>
+                    <p>Если точность в списке Noclip достигает 100%, система автоматически перенесет рекорд в основной список.</p>
+                </div>`
             }
         };
 
+        function renderAll() {
+            const t = i18n[currentLang];
+            
+            // Lógica de ascenso 100%
+            nivelesNoclip.forEach((n, index) => {
+                if(n.acc >= 100) {
+                    nivelesMain.push({ nombre: n.nombre, creador: n.creador, puntos: 50, link: n.link, records: n.records });
+                    nivelesNoclip.splice(index, 1);
+                }
+            });
+
+            // UI Text
+            document.getElementById('n-top').innerText = t.n_top;
+            document.getElementById('n-noclip').innerText = t.n_noclip;
+            document.getElementById('n-players').innerText = t.n_players;
+            document.getElementById('n-rules').innerText = t.n_rules;
+            document.getElementById('n-submit').innerText = t.n_submit;
+            document.getElementById('h-top').innerText = t.h_top;
+            document.getElementById('h-noclip').innerText = t.h_noclip;
+            document.getElementById('h-ranking').innerText = t.h_ranking;
+            document.getElementById('r-title').innerText = t.r_title;
+            document.getElementById('rules-content').innerHTML = t.rules;
+
+            // Render Lists
+            const mainDiv = document.getElementById('list-main');
+            mainDiv.innerHTML = "";
+            nivelesMain.sort((a,b)=>b.puntos-a.puntos).slice(0,75).forEach((l,i)=>{
+                mainDiv.innerHTML += `<div class="card" onclick='openLevel(${JSON.stringify(l)})'><div class="rank">#${i+1}</div><div style="flex-grow:1"><b>${l.nombre}</b><br><small>${l.creador}</small></div><div class="pts-tag">${l.puntos} ${t.pts}</div></div>`;
+            });
+
+            const noclipDiv = document.getElementById('list-noclip');
+            noclipDiv.innerHTML = "";
+            nivelesNoclip.sort((a,b)=>b.acc-a.acc).slice(0,75).forEach((l,i)=>{
+                noclipDiv.innerHTML += `<div class="card" onclick='openLevel(${JSON.stringify(l)})'><div class="rank">#${i+1}</div><div style="flex-grow:1"><b>${l.nombre}</b><br><small>${l.creador}</small></div><div class="pts-tag">${l.acc}%</div></div>`;
+            });
+
+            const playerDiv = document.getElementById('list-players');
+            playerDiv.innerHTML = "";
+            const max = Math.max(...jugadoresData.map(p=>p.puntos)) || 1;
+            jugadoresData.sort((a,b)=>b.puntos-a.puntos).slice(0,100).forEach((p,i)=>{
+                playerDiv.innerHTML += `<div class="player-card"><div><b>#${i+1}</b> ${p.nombre} - ${p.puntos} ${t.pts}</div><div class="p-bar-bg"><div class="p-bar-fill" style="width:${(p.puntos/max)*100}%"></div></div></div>`;
+            });
+        }
+
         function toggleLanguage() {
-            currentLang = currentLang === 'es' ? 'en' : 'es';
-            document.getElementById('lang-btn').innerText = currentLang === 'es' ? 'EN' : 'ES';
-            document.querySelectorAll('[data-t]').forEach(el => {
-                const key = el.getAttribute('data-t');
-                el.innerText = translations[currentLang][key];
-            });
+            currentLang = currentLang === 'es' ? 'en' : (currentLang === 'en' ? 'ru' : 'es');
+            document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
+            renderAll();
         }
 
-        function toggleMenu() {
-            var m = document.getElementById("side-menu");
-            m.style.width = (m.style.width === "280px") ? "0" : "280px";
-        }
-
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('section-active'));
-            document.getElementById(id).classList.add('section-active');
-            toggleMenu();
-            window.scrollTo(0,0);
-        }
-
-        function openLevel(name, creator, dur, obj, victors, link, typeTitle = "REGISTROS") {
-            document.getElementById('m-title').innerText = name;
-            document.getElementById('m-creator').innerText = (currentLang === 'es' ? "por " : "by ") + creator;
-            document.getElementById('m-dur').innerText = dur;
-            document.getElementById('m-obj').innerText = obj;
-            document.getElementById('m-video').href = link;
-            let list = document.getElementById('m-victors-list');
-            list.innerHTML = "";
-            victors.forEach(v => {
-                let li = document.createElement('li');
-                let parts = v.split(" - ");
-                li.innerHTML = `${parts[0]} <span>${parts[1]}</span>`;
-                list.appendChild(li);
-            });
+        function openLevel(l) {
+            document.getElementById('m-title').innerText = l.nombre;
+            document.getElementById('m-creator').innerText = `${i18n[currentLang].by} ${l.creador}`;
+            document.getElementById('m-video').innerText = i18n[currentLang].m_btn;
+            document.getElementById('m-video').href = l.link;
+            document.getElementById('m-victors').innerHTML = l.records.map(r=>`<div>👤 ${r.p} <span style="float:right; color:var(--primary)">${r.v}</span></div>`).join('') || "No Records";
             document.getElementById('modal-overlay').style.display = 'flex';
         }
 
         function closeDetails() { document.getElementById('modal-overlay').style.display = 'none'; }
-
-        // GENERACIÓN
-        let nivContainer = document.getElementById('niveles-lista');
-        for(let i=1; i<=15; i++) {
-            nivContainer.innerHTML += `<div class="card" onclick="openLevel('EMPTY SLOT', 'N/A', '0:00', '0k', ['-'], '#')"><div class="rank">${i}</div><div class="info"><b>EMPTY SLOT</b><br><small>TV List</small></div><div>0pts</div></div>`;
+        function toggleMenu() { const m = document.getElementById("side-menu"); m.style.width = (m.style.width === "300px") ? "0" : "300px"; }
+        function showSection(id) { 
+            document.querySelectorAll('.section').forEach(s=>s.classList.remove('section-active')); 
+            document.getElementById(id).classList.add('section-active');
+            toggleMenu(); window.scrollTo(0,0);
         }
 
-        let noclipContainer = document.getElementById('noclip-lista-gen');
-        for(let i=3; i<=15; i++) {
-            noclipContainer.innerHTML += `<div class="card"><div class="rank">${i}</div><div class="info"><b>NOCLIP SLOT</b><br><small data-t="noclip_tag">Accuracy Showcase</small></div><div class="acc-info"><span class="acc-label">--% Acc</span></div></div>`;
-        }
-
-        let jugTable = document.getElementById('jugadores-lista-gen');
-        for(let i=2; i<=100; i++) {
-            jugTable.innerHTML += `<tr class="stats-row"><td>${i}</td><td>PLAYER ${i}</td><td style="text-align:right; color:#00d4ff;">${1000-(i*5)}pts</td></tr>`;
-        }
+        window.onload = renderAll;
     </script>
 </body>
 </html>
