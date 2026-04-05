@@ -31,6 +31,14 @@
             font-weight: 900; backdrop-filter: blur(15px); text-transform: uppercase; font-size: 0.75rem;
         }
 
+        /* BUSCADOR */
+        .search-container { margin-bottom: 20px; width: 100%; }
+        .search-bar {
+            width: 100%; padding: 12px; background: #111; border: 1px solid var(--border);
+            border-radius: 8px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem;
+        }
+        .search-bar:focus { border-color: var(--primary); }
+
         #side-menu { 
             height: 100%; width: 0; position: fixed; z-index: 4000; top: 0; right: 0; 
             background: rgba(2, 2, 2, 0.99); transition: 0.4s; overflow-x: hidden; 
@@ -84,9 +92,23 @@
         <a href="https://forms.gle/52ifAHg4i1yG4tye8" target="_blank" class="highlight" id="n-submit"></a>
     </nav>
 
-    <div id="inicio" class="section section-active"><h1 id="h-top" style="text-align:center; margin-bottom:40px;"></h1><div id="list-main"></div></div>
-    <div id="noclip" class="section"><h1 id="h-noclip" style="text-align:center; margin-bottom:40px;"></h1><div id="list-noclip"></div></div>
-    <div id="jugadores" class="section"><h1 id="h-ranking" style="text-align:center; margin-bottom:40px;"></h1><div id="list-players"></div></div>
+    <div id="inicio" class="section section-active">
+        <h1 id="h-top" style="text-align:center; margin-bottom:20px;"></h1>
+        <div class="search-container"><input type="text" id="search-main" class="search-bar" oninput="renderAll()" placeholder="Buscar nivel..."></div>
+        <div id="list-main"></div>
+    </div>
+
+    <div id="noclip" class="section">
+        <h1 id="h-noclip" style="text-align:center; margin-bottom:20px;"></h1>
+        <div class="search-container"><input type="text" id="search-noclip" class="search-bar" oninput="renderAll()" placeholder="Buscar nivel..."></div>
+        <div id="list-noclip"></div>
+    </div>
+
+    <div id="jugadores" class="section">
+        <h1 id="h-ranking" style="text-align:center; margin-bottom:20px;"></h1>
+        <div class="search-container"><input type="text" id="search-players" class="search-bar" oninput="renderAll()" placeholder="Buscar jugador..."></div>
+        <div id="list-players"></div>
+    </div>
 
     <div id="reglas" class="section">
         <div class="rules-doc">
@@ -105,41 +127,18 @@
     </div>
 
     <script>
-        /* ==========================================
-           GUÍA DE RELLENADO (BASE DE DATOS)
-           ========================================== */
-
-        // MAIN LIST (TOP 75)
         let nivelesMain = [
-            { 
-                nombre: "NIVEL EJEMPLO",      // Nombre del nivel
-                creador: "CREADOR EJEMPLO",    // Quién lo creó
-                puntos: 0,                  // Puntos que da (número)
-                link: "https://youtube.com",  // Link al video de prueba
-                records: [{p: "Jugador1", v: "100%"}, {p: "Jugador2", v: "100%"}] // Lista de victoriosos
-            },
+            { nombre: "NIVEL EJEMPLO", creador: "CREADOR EJEMPLO", puntos: 0, link: "#", records: [] },
         ];
 
-        // NOCLIP LIST (TOP 75)
         let nivelesNoclip = [
-            { 
-                nombre: "NIVEL EJEMPLO NOCLIP", 
-                creador: "CREADOR EJEMPLO", 
-                acc: 0,                    // Porcentaje de precisión (número)
-                link: "https://youtube.com", 
-                records: [{p: "Jugador1", v: "99.5%"}] 
-            },
+            { nombre: "NIVEL EJEMPLO NOCLIP", creador: "CREADOR EJEMPLO", acc: 0, link: "#", records: [] },
         ];
 
-        // JUGADORES (TOP 100)
         let jugadoresData = [
-            { 
-                nombre: "NOMBRE JUGADOR",     // Nombre del jugador
-                puntos: 0                  // Puntos totales acumulados
-            },
+            { nombre: "NOMBRE JUGADOR", puntos: 0 },
         ];
 
-        /* --- LLENADO AUTOMÁTICO DE SLOTS VACÍOS --- */
         for(let i=nivelesMain.length+1; i<=75; i++) nivelesMain.push({ nombre: `MAIN SLOT #${i}`, creador: "VACANTE", puntos: 0, link: "#", records: [] });
         for(let i=nivelesNoclip.length+1; i<=75; i++) nivelesNoclip.push({ nombre: `NOCLIP SLOT #${i}`, creador: "VACANTE", acc: 0, link: "#", records: [] });
         for(let i=jugadoresData.length+1; i<=100; i++) jugadoresData.push({ nombre: `PLAYER SLOT #${i}`, puntos: 0 });
@@ -152,94 +151,57 @@
                 h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "WORLD RANKING", r_title: "CONSTITUCIÓN TÉCNICA DE GDTVL",
                 m_btn: "VER PRUEBA", by: "POR", pts: "PTS",
                 rules: `
-                <div class="rule-block">
-                    <h3>1. HARDWARE Y MÉTODOS DE INSTALACIÓN</h3>
-                    <p>Para evitar el lag de procesamiento, solo se permiten los siguientes métodos:</p>
-                    <div class="device-list">
-                        <b>• Smart TV (Android/Google TV):</b> Sideloading mediante la App "Send Files to TV" o USB para instalar el APK oficial.<br>
-                        <b>• TV Boxes (NVIDIA Shield, Xiaomi Mi Box, Chromecast 4K):</b> Instalación directa vía Play Store o APK.<br>
-                        <b>• Consolas:</b> Solo si la latencia es menor a 15ms.<br>
-                        <b>• Apple TV:</b> Solo mediante Sideloading nativo (.ipa).
-                    </div>
-                    <p><b>PROHIBICIÓN:</b> El uso de Casting/Mirroring desde un móvil está estrictamente prohibido debido a la latencia de red añadida.</p>
-                </div>
-                <div class="rule-block">
-                    <h3>2. EXCEPCIÓN DE TASA DE REFRESCO</h3>
-                    <div class="exception-box">
-                        <b>REGLA DE ORO:</b> Si el nivel posee secciones diseñadas para monitores de 240Hz+ que resulten <b>imposibles</b> en los 60Hz/120Hz nativos de una televisión, el jugador queda <b>totalmente autorizado</b> a utilizar FPS Bypass o Click Between Frames (CBF).
-                    </div>
-                </div>
-                <div class="rule-block">
-                    <h3>3. ASCENSO AUTOMÁTICO</h3>
-                    <p>Si un registro en la Noclip List alcanza una precisión del 100%, el sistema lo promoverá automáticamente a la Main List.</p>
-                </div>`
+                <div class="rule-block"><h3>1. HARDWARE</h3><p>Solo se permiten Smart TVs o dispositivos (TV Box/Consolas) conectados a una TV física. Prohibido el uso de monitores de PC.</p></div>
+                <div class="rule-block"><h3>2. INSTALACIÓN</h3><p>El juego debe estar instalado localmente mediante APK, Sideloading o tiendas oficiales del dispositivo.</p></div>
+                <div class="rule-block"><h3>3. PROHIBICIÓN DE MIRRORING</h3><p>El uso de Casting/Mirroring o duplicación de pantalla desde móviles/PC está estrictamente prohibido debido al input lag artificial.</p></div>
+                <div class="rule-block"><h3>4. REGLA DE ORO (Hz)</h3><div class="exception-box">Si un nivel es imposible en 60Hz/120Hz nativos de TV, se autoriza el uso de FPS Bypass o Click Between Frames (CBF).</div></div>
+                <div class="rule-block"><h3>5. EVIDENCIA</h3><p>El video debe mostrar el nivel completo. Es obligatorio que se escuche el audio y, de ser posible, los clics físicos.</p></div>
+                <div class="rule-block"><h3>6. HUD REQUERIDO</h3><p>Para la Noclip List, el contador de Accuracy debe ser visible en todo momento durante el récord.</p></div>
+                <div class="rule-block"><h3>7. ASCENSO</h3><p>Cualquier récord de Noclip con 100% de precisión será revisado para su ascenso automático a la Main List.</p></div>
+                <div class="rule-block"><h3>8. FPS LIMITS</h3><p>No hay límite de FPS mientras se use el hardware permitido, siempre que el juego sea estable y no se use Speedhack.</p></div>
+                <div class="rule-block"><h3>9. MODS ADMITIDOS</h3><p>Solo se admiten mods cosméticos o de rendimiento (como CBF). Cualquier mod que altere la física para facilitar el nivel resultará en ban.</p></div>
+                <div class="rule-block"><h3>10. VERIFICACIÓN</h3><p>El equipo de GDTVL se reserva el derecho de pedir una prueba de manos (Handcam) si el récord es sospechoso.</p></div>`
             },
             en: {
                 n_top: "🏆 TOP 75 MAIN", n_noclip: "🎬 TOP 75 NOCLIP", n_players: "👥 TOP 100 PLAYERS", n_rules: "⚖️ TECHNICAL RULES", n_submit: "📝 SUBMIT RECORD",
                 h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "WORLD RANKING", r_title: "GDTVL TECHNICAL CONSTITUTION",
                 m_btn: "WATCH PROOF", by: "BY", pts: "PTS",
                 rules: `
-                <div class="rule-block">
-                    <h3>1. HARDWARE & INSTALLATION</h3>
-                    <p>To prevent processing lag, only the following methods are allowed:</p>
-                    <div class="device-list">
-                        <b>• Smart TV (Android/Google TV):</b> Sideloading via "Send Files to TV" or USB for official APK installation.<br>
-                        <b>• TV Boxes (NVIDIA Shield, Mi Box, Chromecast):</b> Direct Play Store or APK install.<br>
-                        <b>• Consoles:</b> Only if input latency is below 15ms.<br>
-                        <b>• Apple TV:</b> Native sideloading (.ipa) only.
-                    </div>
-                    <p><b>PROHIBITION:</b> Mobile screen mirroring/casting is strictly banned due to network latency.</p>
-                </div>
-                <div class="rule-block">
-                    <h3>2. REFRESH RATE EXCEPTION</h3>
-                    <div class="exception-box">
-                        <b>GOLDEN RULE:</b> If a level's architecture is <b>impossible</b> on native 60Hz/120Hz TVs compared to high-end monitors, the player is <b>fully authorized</b> to use FPS Bypass or CBF.
-                    </div>
-                </div>
-                <div class="rule-block">
-                    <h3>3. AUTOMATIC ASCENSION</h3>
-                    <p>If a Noclip List record reaches 100% accuracy, the system will automatically promote it to the Main List.</p>
-                </div>`
+                <div class="rule-block"><h3>1. HARDWARE</h3><p>Only Smart TVs or devices (TV Box/Consoles) connected to a physical TV are allowed. PC monitors are banned.</p></div>
+                <div class="rule-block"><h3>2. INSTALLATION</h3><p>Game must be locally installed via APK, Sideloading, or official stores.</p></div>
+                <div class="rule-block"><h3>3. NO MIRRORING</h3><p>Screen mirroring/casting from mobile/PC is strictly banned due to latency.</p></div>
+                <div class="rule-block"><h3>4. GOLDEN RULE (Hz)</h3><div class="exception-box">If a level is impossible on native 60Hz/120Hz, FPS Bypass or CBF is authorized.</div></div>
+                <div class="rule-block"><h3>5. EVIDENCE</h3><p>Video must show full completion. Game audio and physical clicks are highly recommended.</p></div>
+                <div class="rule-block"><h3>6. REQUIRED HUD</h3><p>For Noclip List, the Accuracy counter must be visible at all times.</p></div>
+                <div class="rule-block"><h3>7. ASCENSION</h3><p>Any 100% Accuracy Noclip record will be reviewed for automatic promotion to Main List.</p></div>
+                <div class="rule-block"><h3>8. FPS LIMITS</h3><p>No FPS limit as long as hardware is compliant and no Speedhack is used.</p></div>
+                <div class="rule-block"><h3>9. ALLOWED MODS</h3><p>Only cosmetic or performance mods (like CBF) are allowed. Physics-altering mods lead to a ban.</p></div>
+                <div class="rule-block"><h3>10. VERIFICATION</h3><p>Handcam proof may be requested for suspicious records.</p></div>`
             },
             ru: {
-                n_top: "🏆 ТОП 75 MAIN", n_noclip: "🎬 ТОП 75 NOCLIP", n_players: "👥 ТОП 100 ИГРОКОВ", n_rules: "⚖️ ПРАВИЛА", n_submit: "📝 ОТПРАВИТЬ РЕКОРД",
-                h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "МИРОВОЙ РЕЙТИНГ", r_title: "GDTVL ТЕХНИЧЕСКИЙ РЕГЛАМЕНТ",
+                n_top: "🏆 ТОП 75 MAIN", n_noclip: "🎬 ТОП 75 NOCLIP", n_players: "👥 ТОП 100 ИГРОКОВ", n_rules: "⚖️ ПРАВИЛА", n_submit: "📝 РЕКОРД",
+                h_top: "GDTVL MAIN LIST", h_noclip: "GDTVL NOCLIP LIST", h_ranking: "WORLD RANKING", r_title: "GDTVL КОНСТИТУЦИЯ",
                 m_btn: "СМОТРЕТЬ", by: "ОТ", pts: "ОЧКОВ",
                 rules: `
-                <div class="rule-block">
-                    <h3>1. ОБОРУДОВАНИЕ И УСТАНОВКА</h3>
-                    <p>Для предотвращения задержек разрешены только следующие методы:</p>
-                    <div class="device-list">
-                        <b>• Smart TV:</b> Sideloading через USB or "Send Files to TV".<br>
-                        <b>• TV Boxes:</b> NVIDIA Shield, Mi Box, Chromecast.<br>
-                        <b>• Консоли:</b> Только при задержке ввода менее 15 мс.
-                    </div>
-                    <p><b>ЗАПРЕТ:</b> Трансляция экрана с мобильного устройства строго запрещена.</p>
-                </div>
-                <div class="rule-block">
-                    <h3>2. ИСКЛЮЧЕНИЕ ЧАСТОТЫ ОБНОВЛЕНИЯ</h3>
-                    <div class="exception-box">
-                        <b>ЗОЛОТОЕ ПРАВИЛО:</b> Если уровень <b>невозможен</b> на стандартных 60/120 Гц, игроку официально разрешено использовать FPS Bypass или CBF.
-                    </div>
-                </div>
-                <div class="rule-block">
-                    <h3>3. АВТОМАТИЧЕСКИЙ ПОДЪЕМ</h3>
-                    <p>Если точность в списке Noclip достигает 100%, система автоматически перенесет рекорд в основной список.</p>
-                </div>`
+                <div class="rule-block"><h3>1. ОБОРУДОВАНИЕ</h3><p>Только Smart TV или приставки, подключенные к ТВ. Мониторы ПК запрещены.</p></div>
+                <div class="rule-block"><h3>2. УСТАНОВКА</h3><p>Игра должна быть установлена локально через APK или официальные магазины.</p></div>
+                <div class="rule-block"><h3>3. НЕТ ТРАНСЛЯЦИЯМ</h3><p>Зеркалирование экрана с телефона запрещено из-за задержки.</p></div>
+                <div class="rule-block"><h3>4. ЗОЛОТОЕ ПРАВИЛО</h3><div class="exception-box">Если уровень невозможен на 60/120 Гц, разрешен FPS Bypass или CBF.</div></div>
+                <div class="rule-block"><h3>5. ДОКАЗАТЕЛЬСТВА</h3><p>Видео должно быть полным, с игровым аудио.</p></div>
+                <div class="rule-block"><h3>6. HUD</h3><p>Для Noclip List счетчик точности должен быть виден всегда.</p></div>
+                <div class="rule-block"><h3>7. ПОДЪЕМ</h3><p>100% точность в Noclip дает право на переход в Main List.</p></div>
+                <div class="rule-block"><h3>8. FPS</h3><p>Ограничений по FPS нет, если не используется Speedhack.</p></div>
+                <div class="rule-block"><h3>9. МОДЫ</h3><p>Разрешены только косметические моды и CBF.</p></div>
+                <div class="rule-block"><h3>10. ПРОВЕРКА</h3><p>Мы можем запросить Handcam для проверки рекорда.</p></div>`
             }
         };
 
         function renderAll() {
             const t = i18n[currentLang];
+            const qMain = document.getElementById('search-main').value.toLowerCase();
+            const qNoclip = document.getElementById('search-noclip').value.toLowerCase();
+            const qPlayers = document.getElementById('search-players').value.toLowerCase();
             
-            // Lógica de ascenso 100%
-            nivelesNoclip.forEach((n, index) => {
-                if(n.acc >= 100) {
-                    nivelesMain.push({ nombre: n.nombre, creador: n.creador, puntos: 50, link: n.link, records: n.records });
-                    nivelesNoclip.splice(index, 1);
-                }
-            });
-
             // UI Text
             document.getElementById('n-top').innerText = t.n_top;
             document.getElementById('n-noclip').innerText = t.n_noclip;
@@ -255,26 +217,28 @@
             // Render Lists
             const mainDiv = document.getElementById('list-main');
             mainDiv.innerHTML = "";
-            nivelesMain.sort((a,b)=>b.puntos-a.puntos).slice(0,75).forEach((l,i)=>{
+            nivelesMain.filter(l => l.nombre.toLowerCase().includes(qMain)).sort((a,b)=>b.puntos-a.puntos).slice(0,75).forEach((l,i)=>{
                 mainDiv.innerHTML += `<div class="card" onclick='openLevel(${JSON.stringify(l)})'><div class="rank">#${i+1}</div><div style="flex-grow:1"><b>${l.nombre}</b><br><small>${l.creador}</small></div><div class="pts-tag">${l.puntos} ${t.pts}</div></div>`;
             });
 
             const noclipDiv = document.getElementById('list-noclip');
             noclipDiv.innerHTML = "";
-            nivelesNoclip.sort((a,b)=>b.acc-a.acc).slice(0,75).forEach((l,i)=>{
+            nivelesNoclip.filter(l => l.nombre.toLowerCase().includes(qNoclip)).sort((a,b)=>b.acc-a.acc).slice(0,75).forEach((l,i)=>{
                 noclipDiv.innerHTML += `<div class="card" onclick='openLevel(${JSON.stringify(l)})'><div class="rank">#${i+1}</div><div style="flex-grow:1"><b>${l.nombre}</b><br><small>${l.creador}</small></div><div class="pts-tag">${l.acc}%</div></div>`;
             });
 
             const playerDiv = document.getElementById('list-players');
             playerDiv.innerHTML = "";
             const max = Math.max(...jugadoresData.map(p=>p.puntos)) || 1;
-            jugadoresData.sort((a,b)=>b.puntos-a.puntos).slice(0,100).forEach((p,i)=>{
+            jugadoresData.filter(p => p.nombre.toLowerCase().includes(qPlayers)).sort((a,b)=>b.puntos-a.puntos).slice(0,100).forEach((p,i)=>{
                 playerDiv.innerHTML += `<div class="player-card"><div><b>#${i+1}</b> ${p.nombre} - ${p.puntos} ${t.pts}</div><div class="p-bar-bg"><div class="p-bar-fill" style="width:${(p.puntos/max)*100}%"></div></div></div>`;
             });
         }
 
         function toggleLanguage() {
-            currentLang = currentLang === 'es' ? 'en' : (currentLang === 'en' ? 'ru' : 'es');
+            if(currentLang === 'es') currentLang = 'en';
+            else if(currentLang === 'en') currentLang = 'ru';
+            else currentLang = 'es';
             document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
             renderAll();
         }
